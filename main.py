@@ -68,10 +68,16 @@ class ViewAllEvents(webapp2.RequestHandler):
         names = []
 
         for event in events:
+
             if event.date > datetime.datetime.now()
                 locations.append(event.loc)
                 dates.append(event.date)
                 names.append(event.name)
+
+            locations.append(str(event.loc))
+            dates.append(str(event.date))
+            names.append(event.name)
+
 
         dictPassed = {'dates':dates, 'names':names,'locations':locations}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
@@ -93,8 +99,8 @@ class ViewOneEvent(webapp2.RequestHandler):
             ratings = None
             author_name = None
 
-        dictPassed = {'date':the_event.date,
-                      'location':the_event.loc,
+        dictPassed = {'date':str(the_event.date),
+                      'location':str(the_event.loc),
                       'description':the_event.description,
                       'coverUrl':the_event.coverUrl,
                       'linkage':the_event.linkage,
@@ -204,6 +210,4 @@ app = webapp2.WSGIApplication([
     ('/ViewOneWorker',ViewOneWorker),
     ('/ViewAllWorkers',ViewAllWorkers),
     ('/GiveFeedback',GiveFeedback),
-    # ('/DeleteEvent',DeleteEvent)
-], debug=True)
 

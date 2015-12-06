@@ -18,7 +18,6 @@ import webapp2
 import cgi
 import urllib
 import json
-import datetime
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -68,17 +67,10 @@ class ViewAllEvents(webapp2.RequestHandler):
         names = []
 
         for event in events:
-
             if event.date > datetime.datetime.now()
-                locations.append(event.loc)
+                locations.append(event.loc))
                 dates.append(event.date)
                 names.append(event.name)
-
-            locations.append(str(event.loc))
-            dates.append(str(event.date))
-            names.append(event.name)
-
-
         dictPassed = {'dates':dates, 'names':names,'locations':locations}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
@@ -99,8 +91,8 @@ class ViewOneEvent(webapp2.RequestHandler):
             ratings = None
             author_name = None
 
-        dictPassed = {'date':str(the_event.date),
-                      'location':str(the_event.loc),
+        dictPassed = {'date':the_event.date,
+                      'location':the_event.loc,
                       'description':the_event.description,
                       'coverUrl':the_event.coverUrl,
                       'linkage':the_event.linkage,
@@ -123,7 +115,6 @@ class GiveFeedback(webapp2.RequestHandler):
         author.put()
 
 class ViewAllWorkers(webapp2.RequestHandler):
-    """view """
     def get(self):
         workers = Crowdworker.query().fetch()
         names = []
@@ -133,6 +124,7 @@ class ViewAllWorkers(webapp2.RequestHandler):
             names.append(worker.name)
             rating = worker.score/worker.rated_times
             ratings.append(str(rating))
+
 
         dictPassed = {'names':names, 'ratings':ratings}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
@@ -210,4 +202,5 @@ app = webapp2.WSGIApplication([
     ('/ViewOneWorker',ViewOneWorker),
     ('/ViewAllWorkers',ViewAllWorkers),
     ('/GiveFeedback',GiveFeedback),
+
 

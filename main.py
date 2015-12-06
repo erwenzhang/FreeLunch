@@ -18,6 +18,7 @@ import webapp2
 import cgi
 import urllib
 import json
+import datetime
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -67,9 +68,10 @@ class ViewAllEvents(webapp2.RequestHandler):
         names = []
 
         for event in events:
-            locations.append(event.loc)
-            dates.append(event.date)
-            names.append(event.name)
+            if event.date > datetime.datetime.now()
+                locations.append(event.loc)
+                dates.append(event.date)
+                names.append(event.name)
 
         dictPassed = {'dates':dates, 'names':names,'locations':locations}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
@@ -114,18 +116,93 @@ class GiveFeedback(webapp2.RequestHandler):
 
         author.put()
 
+class ViewAllWorkers(webapp2.RequestHandler):
+    """view """
+    def get(self):
+        workers = Crowdworker.query().fetch()
+        names = []
+        ratings = []
+
+        for worker in workers:
+            names.append(worker.name)
+            rating = worker.score/worker.rated_times
+            ratings.append(str(rating))
+
+        dictPassed = {'names':names, 'ratings':ratings}
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
+
+class ViewOneWorker(webapp2.RequestHandler):
+    def get(self):
+        events_loc = []
+        events_date = []
+        events_name = []
+        worker_name = self.request.get('worker_name')
+        delete_list = self.request.get('delete_list')
+        worker =  ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get())
+        
+        
+        if delete_list:
+            for delete_item in delete_list:
+                ndb.delete(ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item))
+
+        events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1",worker.ID).get())
+        for event in events:
+            events_loc.append(event.loc)
+            events_name.append(event.name)
+            events_date.append(event.date)
 
 
+        dictPassed = {'events_name':events_name, 'events_date':events_date,'events_loc':events_loc}
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
+
+
+class Mapview(webapp2.RequestHandler):
+    """docstring for Mapview"""
+    def get(self):
+        events = Event.query().fetch()
+        locations = []
+        dates = []
+        names = []
+
+        for event in events:
+            if event.date > datetime.datetime.now()
+                locations.append(event.loc)
+                dates.append(event.date)
+                names.append(event.name)
+
+        dictPassed = {'dates':dates, 'names':names,'locations':locations}
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
+
+class Calendarview(webapp2.RequestHandler):
+    def get(self):
+        events = Event.query().fetch()
+        locations = []
+        dates = []
+        names = []
+
+        for event in events:
+            locations.append(event.loc)
+            dates.append(event.date)
+            names.append(event.name)
+
+        dictPassed = {'dates':dates, 'names':names,'locations':locations}
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
+
+        
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    # ('/Mapview',MapView),
-    # ('/Calendarview',CalendarView),
+    ('/Mapview',MapView),
+    ('/Calendarview',CalendarView),
     # ('/Addevent',AddEvent),
     ('/ViewOneEvent',ViewOneEvent),
     ('/ViewAllEvents',ViewAllEvents),
-    # ('/ViewOneWorker',ViewOneWorker),
-    # ('/ViewAllWorkers',ViewAllWorkers),
+    ('/ViewOneWorker',ViewOneWorker),
+    ('/ViewAllWorkers',ViewAllWorkers),
     ('/GiveFeedback',GiveFeedback),
     # ('/DeleteEvent',DeleteEvent)
 ], debug=True)

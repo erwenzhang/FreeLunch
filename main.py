@@ -201,6 +201,7 @@ app = webapp2.WSGIApplication([
     ('/ViewAllEvents',ViewAllEvents),
     ('/ViewOneWorker',ViewOneWorker),
     ('/ViewAllWorkers',ViewAllWorkers),
-    ('/GiveFeedback',GiveFeedback),
+    ('/GiveFeedback',GiveFeedback)],
+    debug = True)
 
 

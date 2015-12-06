@@ -49,7 +49,7 @@ class Crowdworker(ndb.Model):
     ID = ndb.StringProperty()
     name = ndb.StringProperty()
     rated_times = ndb.IntegerProperty(default=0)
-    score = ndb.IntegerProperty()
+    score = ndb.IntegerProperty(default=0)
 
 
 
@@ -156,7 +156,7 @@ class ViewOneWorker(webapp2.RequestHandler):
         self.response.write(jsonObj)
 
 
-class Mapview(webapp2.RequestHandler):
+class MapView(webapp2.RequestHandler):
     """docstring for Mapview"""
     def get(self):
         events = Event.query().fetch()
@@ -174,7 +174,7 @@ class Mapview(webapp2.RequestHandler):
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
-class Calendarview(webapp2.RequestHandler):
+class CalendarView(webapp2.RequestHandler):
     def get(self):
         events = Event.query().fetch()
         locations = []
@@ -190,13 +190,57 @@ class Calendarview(webapp2.RequestHandler):
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
+class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
+    def get(self):
+        workerID = self.request.get("workerID")
+        worker_name = self.request.get("worker_name")
+        worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE workerID = :1",workerID).get()
+        if worker_flag == None:
+            new_worker = Crowdworker(ID = workerID,name = worker_name)
+            new_worker.put()
+
+
+        event_loc = self.request.get("loc")
+        event_date = self.request.get("date")
+        event_name = self.request.get("name")
+        upload = self.get_uploads()[0]
+        if upload:
+            new_event = Event(parent=ndb.Key.from_path('authorID'),workerID),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+        else:
+            new_event = Event(parent=ndb.Key.from_path('authorID'),workerID),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+        new_event.put()
+   
+
+
+class UploadFromAndroid():
+    def post(self):
         
+        email = self.request.params['email']
+        user_photo = Picture(parent=db.Key.from_path('Stream',stream_name),imgkey=str(upload.key()), loc=db.GeoPt(img_location_lat,img_location_long) )
+        caption=self.request.params['photoCaption']
+        if caption != None:
+            user_photo.caption = caption
+
+
+        print(user_photo.loc)
+        user_photo.put()
+
+        stream=Stream.query(Stream.name==stream_name).fetch()[0]
+        stream.lastnewdate= user_photo.uploaddate
+        pic_count= Count_pic.query(ancestor=ndb.Key('Stream',stream_name)).fetch()[0]
+
+    
+        pic_count.numbers=pic_count.numbers+1
+        pic_count.put()
+        stream.put()
+
+ 
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/Mapview',MapView),
-    ('/Calendarview',CalendarView),
-    # ('/Addevent',AddEvent),
+    ('/MapView',MapView),
+    ('/CalendarView',CalendarView),
+    ('/Addevent',AddEvent),
     ('/ViewOneEvent',ViewOneEvent),
     ('/ViewAllEvents',ViewAllEvents),
     ('/ViewOneWorker',ViewOneWorker),

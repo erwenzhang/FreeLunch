@@ -18,6 +18,7 @@ import webapp2
 import cgi
 import urllib
 import json
+import datetime
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -66,8 +67,8 @@ class ViewAllEvents(webapp2.RequestHandler):
         names = []
 
         for event in events:
-            if event.date > datetime.datetime.now()
-                locations.append(event.loc))
+            if event.date > datetime.datetime.now():
+                locations.append(event.loc)
                 dates.append(event.date)
                 names.append(event.name)
         dictPassed = {'dates':dates, 'names':names,'locations':locations}
@@ -136,14 +137,14 @@ class ViewOneWorker(webapp2.RequestHandler):
         events_name = []
         worker_name = self.request.get('worker_name')
         delete_list = self.request.get('delete_list')
-        worker =  ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get())
+        worker =  ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get()
 
 
         if delete_list:
             for delete_item in delete_list:
                 ndb.delete(ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item))
 
-        events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1",worker.ID).get())
+        events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1",worker.ID).get()
         for event in events:
             events_loc.append(event.loc)
             events_name.append(event.name)
@@ -164,7 +165,7 @@ class MapView(webapp2.RequestHandler):
         names = []
 
         for event in events:
-            if event.date > datetime.datetime.now()
+            if event.date > datetime.datetime.now():
                 locations.append(event.loc)
                 dates.append(event.date)
                 names.append(event.name)
@@ -204,9 +205,9 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
         event_name = self.request.get("name")
         upload = self.get_uploads()[0]
         if upload:
-            new_event = Event(parent=ndb.Key.from_path('author_name'),worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+            new_event = Event(parent=ndb.Key.from_path('author_name',worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         else:
-            new_event = Event(parent=ndb.Key.from_path('author_name'),worke_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+            new_event = Event(parent=ndb.Key.from_path('author_name',worker_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         new_event.put()
 
 

@@ -27,16 +27,16 @@ from google.appengine.api import images
 
 
 administrator1 = users.User("wenwenzhang1001@gmail.com")
-administrator2 = users.User("kevin.utexas@gmail.com")
+administrator2 = users.User("kevin@utexas.edu.com")
 administrator1_name = "wenwenzhang1001@gmail.com"
-administrator2_name = "kevin.utexas@gmail.com"
+administrator2_name = "kevin@utexas.edu.com"
 
 class Event(ndb.Model):
     name = ndb.StringProperty(required= True)
     description = ndb.StringProperty()
-    coverurl=ndb.StringProperty(default='http://www.finecooking.com/images/no_image_ld.jpg')
+    coverurl=ndb.StringProperty(default=None)
 
-
+    
     author_name = ndb.StringProperty(default="administrator")
 
     loc = ndb.GeoPtProperty(required=True,default=ndb.GeoPt(0,0))
@@ -137,8 +137,8 @@ class ViewOneWorker(webapp2.RequestHandler):
         worker_name = self.request.get('worker_name')
         delete_list = self.request.get('delete_list')
         worker =  ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get())
-
-
+        
+        
         if delete_list:
             for delete_item in delete_list:
                 ndb.delete(ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item))
@@ -191,7 +191,7 @@ class CalendarView(webapp2.RequestHandler):
 
 class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
     def get(self):
-
+        
         worker_name = self.request.get("worker_name")
         worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE worker_name = :1",worker_name).get()
         if worker_flag == None:
@@ -208,11 +208,11 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
         else:
             new_event = Event(parent=ndb.Key.from_path('author_name'),worke_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         new_event.put()
+   
 
 
 
-
-
+ 
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),

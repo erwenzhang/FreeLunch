@@ -28,15 +28,15 @@ from google.appengine.api import images
 
 administrator1 = users.User("wenwenzhang1001@gmail.com")
 administrator2 = users.User("kevin@utexas.edu.com")
-administrator1ID = administrator1.user_id()
-administrator2ID = administrator2.user_id()
+administrator1_name = "wenwenzhang1001@gmail.com"
+administrator2_name = "kevin@utexas.edu.com"
 
 class Event(ndb.Model):
     name = ndb.StringProperty(required= True)
     description = ndb.StringProperty()
     coverurl=ndb.StringProperty(default=None)
 
-    authorID = ndb.StringProperty(default="administrator")
+    
     author_name = ndb.StringProperty(default="administrator")
 
     loc = ndb.GeoPtProperty(required=True,default=ndb.GeoPt(0,0))
@@ -46,7 +46,6 @@ class Event(ndb.Model):
 
 
 class Crowdworker(ndb.Model):
-    ID = ndb.StringProperty()
     name = ndb.StringProperty()
     rated_times = ndb.IntegerProperty(default=0)
     score = ndb.IntegerProperty(default=0)
@@ -82,8 +81,8 @@ class ViewOneEvent(webapp2.RequestHandler):
         event_name = self.request.get("event_name")
         the_event = ndb.gql("SELECT * FROM Event WHERE name = :1",event_name).get()
         print event_name
-        author = ndb.gql("SELECT * FROM Crowdworker WHERE ID = :1",the_event.authorID).get()
-        if author.ID != administrator1ID and author.ID != administrator2ID:
+        author = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",the_event.author_name).get()
+        if author.name != administrator1_name and author.name!= administrator2_name:
             ratings = str(author.score/author.rated_times)
             author_name = author.name
             print "ratings: "+ratings
@@ -192,9 +191,9 @@ class CalendarView(webapp2.RequestHandler):
 
 class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
     def get(self):
-        workerID = self.request.get("workerID")
+        
         worker_name = self.request.get("worker_name")
-        worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE workerID = :1",workerID).get()
+        worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE worker_name = :1",worker_name).get()
         if worker_flag == None:
             new_worker = Crowdworker(ID = workerID,name = worker_name)
             new_worker.put()
@@ -205,34 +204,13 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
         event_name = self.request.get("name")
         upload = self.get_uploads()[0]
         if upload:
-            new_event = Event(parent=ndb.Key.from_path('authorID'),workerID),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+            new_event = Event(parent=ndb.Key.from_path('author_name'),worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         else:
-            new_event = Event(parent=ndb.Key.from_path('authorID'),workerID),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+            new_event = Event(parent=ndb.Key.from_path('author_name'),worke_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         new_event.put()
    
 
 
-class UploadFromAndroid():
-    def post(self):
-        
-        email = self.request.params['email']
-        user_photo = Picture(parent=db.Key.from_path('Stream',stream_name),imgkey=str(upload.key()), loc=db.GeoPt(img_location_lat,img_location_long) )
-        caption=self.request.params['photoCaption']
-        if caption != None:
-            user_photo.caption = caption
-
-
-        print(user_photo.loc)
-        user_photo.put()
-
-        stream=Stream.query(Stream.name==stream_name).fetch()[0]
-        stream.lastnewdate= user_photo.uploaddate
-        pic_count= Count_pic.query(ancestor=ndb.Key('Stream',stream_name)).fetch()[0]
-
-    
-        pic_count.numbers=pic_count.numbers+1
-        pic_count.put()
-        stream.put()
 
  
 

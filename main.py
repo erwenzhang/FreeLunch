@@ -194,20 +194,20 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
     def get(self):
 
         worker_name = self.request.get("worker_name")
-        worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE worker_name = :1",worker_name).get()
+        worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get()
         if worker_flag == None:
-            new_worker = Crowdworker(ID = workerID,name = worker_name)
+            new_worker = Crowdworker(name = worker_name)
             new_worker.put()
 
 
         event_loc = self.request.get("loc")
         event_date = self.request.get("date")
         event_name = self.request.get("name")
-        upload = self.get_uploads()[0]
-        if upload:
-            new_event = Event(parent=ndb.Key.from_path('author_name',worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
-        else:
-            new_event = Event(parent=ndb.Key.from_path('author_name',worker_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+        try:
+            upload = self.get_uploads()[0]
+            new_event = Event(parent=ndb.Key('author_name',worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+        except Exception, e:
+            new_event = Event(parent=ndb.Key('author_name',worker_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         new_event.put()
 
 

@@ -38,7 +38,7 @@ with open('accurate_loc_new.json') as data_file:
 class Event(ndb.Model):
     name = ndb.StringProperty(required= True)
     description = ndb.StringProperty()
-    coverurl=ndb.StringProperty(default='http://www.finecooking.com/images/no_image_ld.jpg')
+    cover_url=ndb.StringProperty(default='http://www.finecooking.com/images/no_image_ld.jpg')
 
     author_name = ndb.StringProperty(default="administrator")
 
@@ -97,13 +97,13 @@ class ViewOneEvent(webapp2.RequestHandler):
             ratings = None
             author_name = None
 
-        dictPassed = {'dt_start': the_event.dt_start,
-                      'dt_end': the_event.dt_end,
+        dictPassed = {'dt_start': str(the_event.dt_start),
+                      'dt_end': str(the_event.dt_end),
                       # 'location':the_event.loc,
                       'building': the_event.building,
                       'room': the_event.room,
                       'description': the_event.description,
-                      'coverUrl': the_event.coverUrl,
+                      'coverUrl': the_event.cover_url,
                       'linkage': the_event.linkage,
                       'ratings': ratings,
                       'author_name': author_name
@@ -233,7 +233,7 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
 
         try:
             upload = self.get_uploads()[0]
-            new_event = Event(parent=ndb.Key('author_name', worker_name), coverurl=str(upload.key()), name=event_name, loc=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
+            new_event = Event(parent=ndb.Key('author_name', worker_name), cover_url=str(upload.key()), name=event_name, loc=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
         except Exception, e:
             new_event = Event(parent=ndb.Key('author_name', worker_name), name=event_name, building=event_build, loc=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
 

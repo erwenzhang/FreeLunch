@@ -206,7 +206,7 @@ class CalendarView(webapp2.RequestHandler):
         self.response.write(jsonObj)
 
 class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
-    def post(self):
+    def get(self):
 
         worker_name = self.request.get("worker_name")
         worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get()
@@ -217,10 +217,10 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
 
         event_build = self.request.get("building")
         if event_build in building_to_loc:
-            event_loc = building_to_loc[event_build]
+            event_loc = ndb.GeoPt(building_to_loc[event_build][0], building_to_loc[event_build][1])
         else:
             event_build = 'NIL'
-            event_loc = building_to_loc[event_build]
+            event_loc = ndb.GeoPt(building_to_loc[event_build][0], building_to_loc[event_build][1])
 
         event_dt_start = self.request.get("date_time1")
         event_dt_start = datetime.datetime.strptime(event_dt_start, '%b %d %Y %I:%M%p')
@@ -233,14 +233,13 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
 
         try:
             upload = self.get_uploads()[0]
-            new_event = Event(parent=ndb.Key('author_name', worker_name), coverurl=str(upload.key()), name=event_name, location=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
+            new_event = Event(parent=ndb.Key('author_name', worker_name), coverurl=str(upload.key()), name=event_name, loc=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
         except Exception, e:
-            new_event = Event(parent=ndb.Key('author_name', worker_name), name=event_name, building=event_build, location=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
+            new_event = Event(parent=ndb.Key('author_name', worker_name), name=event_name, building=event_build, loc=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
 
         new_event.put()
-        print "Got a new event " + event_name + ", created by " + worker_name + ", will be held at " + str(event_build) + ", at time " + str(event_date)
 
-# http://freelunch-test1.appspot.com/Addevent?worker_name=kevin.utexas@gmail.com&date_time1=Jan%201%202016%20%201:33PM&date_time2=Jan%201%202016%20%202:33PM&building=PCL&event_name=ECE%20Seminar&details=Some%20detailed%20information...
+# http://freelunch-test1.appspot.com/Addevent?worker_name=kevin.utexas@gmail.com&date_time1=Jan%201%202016%20%201:33PM&date_time2=Jan%201%202016%20%202:33PM&building=PCL&event_name=ECE%20Seminar&details=Some%20detailed%20information...&room=2.500
 
 class GetUploadURL(webapp2.RequestHandler):
     def get(self):

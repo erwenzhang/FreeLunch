@@ -32,17 +32,22 @@ administrator2 = users.User("kevin.utexas@gmail.com")
 administrator1_name = "wenwenzhang1001@gmail.com"
 administrator2_name = "kevin.utexas@gmail.com"
 
+with open('accurate_loc_new.json') as data_file:
+    building_to_loc = json.load(data_file)
+
 class Event(ndb.Model):
     name = ndb.StringProperty(required= True)
     description = ndb.StringProperty()
     coverurl=ndb.StringProperty(default='http://www.finecooking.com/images/no_image_ld.jpg')
 
-
     author_name = ndb.StringProperty(default="administrator")
 
-    loc = ndb.GeoPtProperty(required=True,default=ndb.GeoPt(0,0))
-    date = ndb.DateTimeProperty(required=True)
+    loc = ndb.GeoPtProperty(required=True,default=ndb.GeoPt(30.283464, -97.737395))
+    building = ndb.StringProperty(default="NIL")
+    room = ndb.StringProperty(default="NA")
 
+    dt_start = ndb.DateTimeProperty(required=True)
+    dt_end = ndb.DateTimeProperty(required=True)
     linkage = ndb.StringProperty(default=None)
 
 
@@ -62,16 +67,17 @@ class MainHandler(webapp2.RequestHandler):
 class ViewAllEvents(webapp2.RequestHandler):
     def get(self):
         events = Event.query().fetch()
-        locations = []
-        dates = []
+        # locations = []
+        buildings = []
+        dts_start = []
         names = []
 
         for event in events:
-            if event.date > datetime.datetime.now():
-                locations.append(str(event.loc))
-                dates.append(str(event.date))
+            if event.dt_start > datetime.datetime.now():
+                buildings.append(event.building)
+                dts_start.append(str(event.dt_start))
                 names.append(event.name)
-        dictPassed = {'dates':dates, 'names':names,'locations':locations}
+        dictPassed = {'dts_start':dts_start, 'names':names,'buildings':buildings}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
@@ -91,13 +97,16 @@ class ViewOneEvent(webapp2.RequestHandler):
             ratings = None
             author_name = None
 
-        dictPassed = {'date':the_event.date,
-                      'location':the_event.loc,
-                      'description':the_event.description,
-                      'coverUrl':the_event.coverUrl,
-                      'linkage':the_event.linkage,
-                      'ratings':ratings,
-                      'author_name':author_name
+        dictPassed = {'dt_start': the_event.dt_start,
+                      'dt_end': the_event.dt_end,
+                      # 'location':the_event.loc,
+                      'building': the_event.building,
+                      'room': the_event.room,
+                      'description': the_event.description,
+                      'coverUrl': the_event.coverUrl,
+                      'linkage': the_event.linkage,
+                      'ratings': ratings,
+                      'author_name': author_name
                       }
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
@@ -132,8 +141,9 @@ class ViewAllWorkers(webapp2.RequestHandler):
 
 class ViewOneWorker(webapp2.RequestHandler):
     def get(self):
-        events_loc = []
-        events_date = []
+        # events_loc = []
+        events_build = []
+        events_dt_start = []
         events_name = []
         worker_name = self.request.get('worker_name')
         delete_list = self.request.get('delete_list')
@@ -146,12 +156,13 @@ class ViewOneWorker(webapp2.RequestHandler):
 
         events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1",worker.ID).get()
         for event in events:
-            events_loc.append(event.loc)
+            # events_loc.append(event.loc)
+            events_build.append(event.building)
             events_name.append(event.name)
-            events_date.append(event.date)
+            events_dt_start.append(event.dt_start)
 
 
-        dictPassed = {'events_name':events_name, 'events_date':events_date,'events_loc':events_loc}
+        dictPassed = {'events_name':events_name, 'events_dt_start':events_dt_start,'events_build':events_build}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
@@ -161,37 +172,41 @@ class MapView(webapp2.RequestHandler):
     def get(self):
         events = Event.query().fetch()
         locations = []
-        dates = []
+        dts_start = []
         names = []
 
         for event in events:
-            if event.date > datetime.datetime.now():
+            if event.dt_start > datetime.datetime.now():
                 locations.append(event.loc)
-                dates.append(event.date)
+                dts_start.append(event.dt_start)
                 names.append(event.name)
 
-        dictPassed = {'dates':dates, 'names':names,'locations':locations}
+        dictPassed = {'dts_start':dts_start, 'names':names,'locations':locations}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
 class CalendarView(webapp2.RequestHandler):
     def get(self):
         events = Event.query().fetch()
-        locations = []
-        dates = []
+        # locations = []
+        buildings = []
+        dts_start = []
+        dts_end = []
         names = []
 
         for event in events:
-            locations.append(event.loc)
-            dates.append(event.date)
+            # locations.append(event.loc)
+            buildings.append(event.building)
+            dts_start.append(event.dt_start)
+            dts_end.append(event.dt_end)
             names.append(event.name)
 
-        dictPassed = {'dates':dates, 'names':names,'locations':locations}
+        dictPassed = {'dts_start': dts_start, 'dts_end': dts_end, 'names': names, 'buildings': buildings}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
 class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
-    def get(self):
+    def post(self):
 
         worker_name = self.request.get("worker_name")
         worker_flag = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get()
@@ -200,26 +215,41 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
             new_worker.put()
 
 
-        event_loc = self.request.get("loc")
-        # You can construct one with two floats like ndb.GeoPt(52.37, 4.88) or with a string ndb.GeoPt("52.37, 4.88").
-        # 52.37,%204.88
-        event_loc = ndb.GeoPt(event_loc)
+        event_build = self.request.get("building")
+        if event_build in building_to_loc:
+            event_loc = building_to_loc[event_build]
+        else:
+            event_build = 'NIL'
+            event_loc = building_to_loc[event_build]
 
-        event_date = self.request.get("date")
-        event_date = datetime.datetime.strptime(event_date, '%b %d %Y %I:%M%p') #event_date='Jun 1 2005  1:33PM'
-        # note: in url, write as Jun%201%202005%20%201:33PM
-        event_name = self.request.get("name")
+        event_dt_start = self.request.get("date_time1")
+        event_dt_start = datetime.datetime.strptime(event_dt_start, '%b %d %Y %I:%M%p')
+        event_dt_end = self.request.get("date_time2")
+        event_dt_end = datetime.datetime.strptime(event_dt_end, '%b %d %Y %I:%M%p')
+
+        event_name = self.request.get("event_name")
+        event_room = self.request.get("room")
+        event_description = self.request.get("details")
+
         try:
             upload = self.get_uploads()[0]
-            new_event = Event(parent=ndb.Key('author_name',worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+            new_event = Event(parent=ndb.Key('author_name', worker_name), coverurl=str(upload.key()), name=event_name, location=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
         except Exception, e:
-            new_event = Event(parent=ndb.Key('author_name',worker_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+            new_event = Event(parent=ndb.Key('author_name', worker_name), name=event_name, building=event_build, location=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
+
         new_event.put()
-        print "Got a new event " + event_name + ", created by " + worker_name + ", will be held at " + str(event_loc) + ", at time " + str(event_date)
+        print "Got a new event " + event_name + ", created by " + worker_name + ", will be held at " + str(event_build) + ", at time " + str(event_date)
 
-# http://freelunch-test1.appspot.com/Addevent?worker_name=kevin.utexas@gmail.com&date=Jan%201%202016%20%201:33PM&loc=52.37,%204.88&name=ECE%20Seminar
+# http://freelunch-test1.appspot.com/Addevent?worker_name=kevin.utexas@gmail.com&date_time1=Jan%201%202016%20%201:33PM&date_time2=Jan%201%202016%20%202:33PM&building=PCL&event_name=ECE%20Seminar&details=Some%20detailed%20information...
 
-
+class GetUploadURL(webapp2.RequestHandler):
+    def get(self):
+        upload_url = blobstore.create_upload_url('/Addevent')
+        upload_url = str(upload_url)
+        dictPassed = {'upload_url':upload_url}
+        print(upload_url)
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
 
 
 app = webapp2.WSGIApplication([
@@ -227,11 +257,12 @@ app = webapp2.WSGIApplication([
     ('/MapView',MapView),
     ('/CalendarView',CalendarView),
     ('/Addevent',AddEvent),
+    ('/GetUploadURL', GetUploadURL),
     ('/ViewOneEvent',ViewOneEvent),
     ('/ViewAllEvents',ViewAllEvents),
     ('/ViewOneWorker',ViewOneWorker),
     ('/ViewAllWorkers',ViewAllWorkers),
-    ('/GiveFeedback',GiveFeedback)],
-    debug = True)
+    ('/GiveFeedback',GiveFeedback)
+], debug=True)
 
 

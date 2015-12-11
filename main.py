@@ -201,13 +201,20 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
 
 
         event_loc = self.request.get("loc")
+        # You can construct one with two floats like ndb.GeoPt(52.37, 4.88) or with a string ndb.GeoPt("52.37, 4.88").
+        # 52.37,%204.88
+        event_loc = ndb.GeoPt(event_loc)
+
         event_date = self.request.get("date")
+        event_date = datetime.datetime.strptime(event_date, '%b %d %Y %I:%M%p') #event_date='Jun 1 2005  1:33PM'
+        # note: in url, write as Jun%201%202005%20%201:33PM
         event_name = self.request.get("name")
         try:
             upload = self.get_uploads()[0]
             new_event = Event(parent=ndb.Key('author_name',worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         except Exception, e:
             new_event = Event(parent=ndb.Key('author_name',worker_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
+        print "Got a new event " + event_name + ", created by " + worker_name + ", will be held at " + str(event_loc) + ", at time " + str(event_date)
         new_event.put()
 
 

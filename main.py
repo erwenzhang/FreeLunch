@@ -72,13 +72,21 @@ class ViewAllEvents(webapp2.RequestHandler):
         dts_start = []
         names = []
 
+        dictsPassed = []
         for event in events:
             if event.dt_start > datetime.datetime.now():
+                onedict = {}
                 buildings.append(event.building)
                 dts_start.append(str(event.dt_start))
                 names.append(event.name)
-        dictPassed = {'dts_start':dts_start, 'names':names,'buildings':buildings}
-        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+
+                onedict['name'] = event.name
+                onedict['dt_start'] = event.dt_start
+                onedict['building'] = event.building
+                dictsPassed.append(onedict)
+        # dictPassed = {'dts_start':dts_start, 'names':names,'buildings':buildings}
+        # jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        jsonObj = json.dumps(dictsPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
 

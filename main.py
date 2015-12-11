@@ -214,10 +214,10 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
             new_event = Event(parent=ndb.Key('author_name',worker_name),coverurl=str(upload.key()),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
         except Exception, e:
             new_event = Event(parent=ndb.Key('author_name',worker_name),name = event_name,loc=event_loc,date=event_date,author_name=worker_name)
-        print "Got a new event " + event_name + ", created by " + worker_name + ", will be held at " + str(event_loc) + ", at time " + str(event_date)
         new_event.put()
+        print "Got a new event " + event_name + ", created by " + worker_name + ", will be held at " + str(event_loc) + ", at time " + str(event_date)
 
-
+# http://freelunch-test1.appspot.com/Addevent?worker_name=kevin.utexas@gmail.com&date=Jan%201%202016%20%201:33PM&loc=52.37,%204.88&name=ECE%20Seminar
 
 
 

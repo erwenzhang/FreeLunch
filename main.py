@@ -68,8 +68,8 @@ class ViewAllEvents(webapp2.RequestHandler):
 
         for event in events:
             if event.date > datetime.datetime.now():
-                locations.append(event.loc)
-                dates.append(event.date)
+                locations.append(str(event.loc))
+                dates.append(str(event.date))
                 names.append(event.name)
         dictPassed = {'dates':dates, 'names':names,'locations':locations}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))

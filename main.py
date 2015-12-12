@@ -102,7 +102,7 @@ class ViewOneEvent(webapp2.RequestHandler):
             except Exception, e:
                 ratings = None
             author_name = author.name
-            print "ratings: "+ratings
+            # print "ratings: "+ratings
         else:
             ratings = None
             author_name = None

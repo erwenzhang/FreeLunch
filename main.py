@@ -33,7 +33,7 @@ administrator_name = "wenwenzhang1001@gmail.com"
 with open('accurate_loc_new.json') as data_file:
     building_to_loc = json.load(data_file)
 
-default_rate = 4.5
+default_rate = 3.5
 
 class Event(ndb.Model):
     name = ndb.StringProperty(required= True)
@@ -49,6 +49,7 @@ class Event(ndb.Model):
     dt_start = ndb.DateTimeProperty(required=True)
     dt_end = ndb.DateTimeProperty(required=True)
     linkage = ndb.StringProperty(default=None)
+
 
 
 class Crowdworker(ndb.Model):
@@ -307,6 +308,32 @@ class GetUploadURL(webapp2.RequestHandler):
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 
+class ViewOnedayEvents(webapp2.RequestHandler):
+    """docstring for ViewOnedayEvents"""
+    def get(self):
+        events_name =[]
+        events_dt_start = []
+        events_build = []
+        date = self.request.get("date")
+        events = Event.query().fetch()
+        for event in events:
+            event_date = str(event.dt_start)[0:10]
+            print event_date
+            if date == event_date:
+                events_build.append(event.building)
+                events_name.append(event.name)
+                events_dt_start.append(str(event.dt_start))
+
+
+
+        dictPassed = {'events_name':events_name, 'events_dt_start':events_dt_start,'events_build':events_build}
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
+
+
+
+        
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
@@ -319,7 +346,8 @@ app = webapp2.WSGIApplication([
     ('/ViewAllEvents',ViewAllEvents),
     ('/ViewOneWorker',ViewOneWorker),
     ('/ViewAllWorkers',ViewAllWorkers),
-    ('/GiveFeedback',GiveFeedback)
+    ('/GiveFeedback',GiveFeedback),
+    ('/ViewOnedayEvents',ViewOnedayEvents)
 ], debug=True)
 
 

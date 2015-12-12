@@ -203,8 +203,8 @@ class CalendarView(webapp2.RequestHandler):
         for event in events:
             # locations.append(event.loc)
             buildings.append(event.building)
-            dts_start.append(event.dt_start)
-            dts_end.append(event.dt_end)
+            dts_start.append(str(event.dt_start))
+            dts_end.append(str(event.dt_end))
             names.append(event.name)
 
         dictPassed = {'display_date': dts_start, 'dts_end': dts_end, 'display_name': names, 'buildings': buildings}
@@ -258,6 +258,11 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
 
 
         event_build = self.request.get("building")
+        print event_build;
+        print self.request.get("event_name");
+        print self.request.get("date_time1");
+        print self.request.get("date_time2");
+        
         if event_build in building_to_loc:
             event_loc = ndb.GeoPt(building_to_loc[event_build][0], building_to_loc[event_build][1])
         else:
@@ -275,11 +280,13 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
 
         try:
             upload = self.get_uploads()[0]
-            new_event = Event(parent=ndb.Key('author_name', worker_name), cover_url=str(upload.key()), name=event_name, loc=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
+            print str(upload.key());
+            new_event = Event(parent=ndb.Key('author_name', worker_name), cover_url=str(images.get_serving_url(upload.key())+"=s500"), name=event_name, loc=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
         except Exception, e:
             new_event = Event(parent=ndb.Key('author_name', worker_name), name=event_name, building=event_build, loc=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
 
         new_event.put()
+        print "put succeussful"
 
 
 class GetUploadURL(webapp2.RequestHandler):

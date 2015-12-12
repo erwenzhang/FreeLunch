@@ -152,13 +152,14 @@ class ViewOneWorker(webapp2.RequestHandler):
         events_dt_start = []
         events_name = []
         worker_name = self.request.get('worker_name')
-        # delete_list = self.request.get('delete_list')
+        delete_item = self.request.get('delete_item')
         worker =  ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get()
 
 
-        # if delete_list:
-        #     for delete_item in delete_list:
-        #         ndb.delete(ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item))
+        if delete_item:
+            tmp = ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item).get()
+            tmp.key.delete();
+            #ndb.delete()
 
         events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1", ndb.Key('author_name', worker_name))
         for event in events:

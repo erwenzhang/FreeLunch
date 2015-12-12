@@ -188,16 +188,16 @@ class MapView(webapp2.RequestHandler):
     def get(self):
         events = Event.query().fetch()
         locations = []
-        dts_start = []
+        buildings = []
         names = []
 
         for event in events:
             if event.dt_start > datetime.datetime.now():
-                locations.append(event.loc)
-                dts_start.append(event.dt_start)
+                locations.append(str(event.loc))
+                buildings.append(event.building)
                 names.append(event.name)
 
-        dictPassed = {'dts_start':dts_start, 'names':names,'locations':locations}
+        dictPassed = {'display_building':buildings, 'names':names,'display_location':locations}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 

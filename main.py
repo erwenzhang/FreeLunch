@@ -35,6 +35,8 @@ administrator2_name = "kevin.utexas@gmail.com"
 with open('accurate_loc_new.json') as data_file:
     building_to_loc = json.load(data_file)
 
+default_rate = 4.5
+
 class Event(ndb.Model):
     name = ndb.StringProperty(required= True)
     description = ndb.StringProperty()
@@ -131,7 +133,11 @@ class ViewAllWorkers(webapp2.RequestHandler):
 
         for worker in workers:
             names.append(worker.name)
-            rating = worker.score/worker.rated_times
+            try:
+                rating = worker.score/worker.rated_times
+            except Exception, e:
+                rating = default_rate
+
             ratings.append(str(rating))
 
 

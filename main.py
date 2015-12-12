@@ -27,10 +27,8 @@ from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.api import images
 
 
-administrator1 = users.User("wenwenzhang1001@gmail.com")
-administrator2 = users.User("kevin.utexas@gmail.com")
-administrator1_name = "wenwenzhang1001@gmail.com"
-administrator2_name = "kevin.utexas@gmail.com"
+administrator = users.User("wenwenzhang1001@gmail.com")
+administrator_name = "wenwenzhang1001@gmail.com"
 
 with open('accurate_loc_new.json') as data_file:
     building_to_loc = json.load(data_file)
@@ -42,7 +40,7 @@ class Event(ndb.Model):
     description = ndb.StringProperty()
     cover_url=ndb.StringProperty(default='http://www.finecooking.com/images/no_image_ld.jpg')
 
-    author_name = ndb.StringProperty(default="administrator")
+    author_name = ndb.StringProperty(default="administrator_name")
 
     loc = ndb.GeoPtProperty(required=True,default=ndb.GeoPt(30.283464, -97.737395))
     building = ndb.StringProperty(default="NIL")
@@ -74,6 +72,12 @@ class ViewAllEvents(webapp2.RequestHandler):
         dts_start = []
         names = []
 
+        if self.request.get("email") == administrator_name:
+            delete_item = self.request.get('delete_item')
+            if delete_item:
+                tmp = ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item).get()
+                tmp.key.delete();
+
         for event in events:
             if event.dt_start > datetime.datetime.now():
                 buildings.append(event.building)
@@ -91,7 +95,7 @@ class ViewOneEvent(webapp2.RequestHandler):
         the_event = ndb.gql("SELECT * FROM Event WHERE name = :1",event_name).get()
         print event_name
         author = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",the_event.author_name).get()
-        if author.name != administrator1_name and author.name!= administrator2_name:
+        if author.name != administrator_name:
             ratings = str(author.score/author.rated_times)
             author_name = author.name
             print "ratings: "+ratings
@@ -130,18 +134,22 @@ class ViewAllWorkers(webapp2.RequestHandler):
         workers = Crowdworker.query().fetch()
         names = []
         ratings = []
-
+        tmp_dic = {}
         for worker in workers:
             names.append(worker.name)
             try:
                 rating = worker.score/worker.rated_times
             except Exception, e:
                 rating = default_rate
+            tmp_dic[worker.name] = rating;
 
-            ratings.append(str(rating))
+        sort_key=sorted(tmp_dic,key=tmp_dic.__getitem__,reverse=True)
+        for key in sort_key:
+            ratings.append(str(tmp_dic[key]))
+            #ratings.append(str(rating))
 
 
-        dictPassed = {'names':names, 'ratings':ratings}
+        dictPassed = {'names':sort_key, 'ratings':ratings}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 

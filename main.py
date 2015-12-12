@@ -97,7 +97,10 @@ class ViewOneEvent(webapp2.RequestHandler):
         print event_name
         author = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",the_event.author_name).get()
         if author.name != administrator_name:
-            ratings = str(author.score/author.rated_times)
+            try:
+                ratings = str(author.score/author.rated_times)
+            except Exception, e:
+                ratings = None
             author_name = author.name
             print "ratings: "+ratings
         else:
@@ -332,7 +335,7 @@ class ViewOnedayEvents(webapp2.RequestHandler):
 
 
 
-        
+
 
 
 app = webapp2.WSGIApplication([

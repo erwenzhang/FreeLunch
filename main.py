@@ -245,7 +245,7 @@ class AddEventWeb(blobstore_handlers.BlobstoreUploadHandler):
 
         new_event.put()
 
-# http://freelunch-test1.appspot.com/Addevent?worker_name=kevin.utexas@gmail.com&date_time1=Jan%201%202016%20%201:33PM&date_time2=Jan%201%202016%20%202:33PM&building=PCL&event_name=ECE%20Seminar&details=Some%20detailed%20information...&room=2.500
+# http://freelunch-test1.appspot.com/AddEventWeb?worker_name=kevin.utexas@gmail.com&date_time1=Jan%201%202016%20%201:33PM&date_time2=Jan%201%202016%20%202:33PM&building=PCL&event_name=ECE%20Seminar&details=Some%20detailed%20information...&room=2.500
 
 class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
@@ -262,7 +262,7 @@ class AddEvent(blobstore_handlers.BlobstoreUploadHandler):
         print self.request.get("event_name");
         print self.request.get("date_time1");
         print self.request.get("date_time2");
-        
+
         if event_build in building_to_loc:
             event_loc = ndb.GeoPt(building_to_loc[event_build][0], building_to_loc[event_build][1])
         else:

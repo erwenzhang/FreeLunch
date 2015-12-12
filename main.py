@@ -152,20 +152,20 @@ class ViewOneWorker(webapp2.RequestHandler):
         events_dt_start = []
         events_name = []
         worker_name = self.request.get('worker_name')
-        delete_list = self.request.get('delete_list')
+        # delete_list = self.request.get('delete_list')
         worker =  ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",worker_name).get()
 
 
-        if delete_list:
-            for delete_item in delete_list:
-                ndb.delete(ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item))
+        # if delete_list:
+        #     for delete_item in delete_list:
+        #         ndb.delete(ndb.gql("SELECT * FROM Event WHERE name = :1",delete_item))
 
-        events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1",worker.ID).get()
+        events = ndb.gql("SELECT * FROM Event WHERE ANCESTOR IS :1", ndb.Key('author_name', worker_name))
         for event in events:
             # events_loc.append(event.loc)
             events_build.append(event.building)
             events_name.append(event.name)
-            events_dt_start.append(event.dt_start)
+            events_dt_start.append(str(event.dt_start))
 
 
         dictPassed = {'events_name':events_name, 'events_dt_start':events_dt_start,'events_build':events_build}

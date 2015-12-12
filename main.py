@@ -201,7 +201,7 @@ class CalendarView(webapp2.RequestHandler):
             dts_end.append(event.dt_end)
             names.append(event.name)
 
-        dictPassed = {'dts_start': dts_start, 'dts_end': dts_end, 'names': names, 'buildings': buildings}
+        dictPassed = {'display_date': dts_start, 'dts_end': dts_end, 'display_name': names, 'buildings': buildings}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
 

@@ -325,7 +325,7 @@ class ViewOnedayEvents(webapp2.RequestHandler):
         events = Event.query().fetch()
         for event in events:
             event_date = str(event.dt_start)[0:10]
-            print event_date
+            #print event_date
             if date == event_date:
                 events_build.append(event.building)
                 events_name.append(event.name)
@@ -336,6 +336,25 @@ class ViewOnedayEvents(webapp2.RequestHandler):
         dictPassed = {'events_name':events_name, 'events_dt_start':events_dt_start,'events_build':events_build}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
+
+class ViewOnebuildingEvents(webapp2.RequestHandler):
+    """docstring for ViewOnebuildingEvents"""
+    def get(self):
+        events_name =[]
+        events_dt_start = []
+        events_build = []
+        building = self.request.get('building')
+        events = Event.query().fetch()
+        for event in events:
+            if event.building == building:
+                events_build.append(event.building)
+                events_name.append(event.name)
+                events_dt_start.append(str(event.dt_start))
+
+        dictPassed = {'events_name':events_name, 'events_dt_start':events_dt_start,'events_build':events_build}
+        jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
+        self.response.write(jsonObj)
+        
 
 
 
@@ -354,7 +373,8 @@ app = webapp2.WSGIApplication([
     ('/ViewOneWorker',ViewOneWorker),
     ('/ViewAllWorkers',ViewAllWorkers),
     ('/GiveFeedback',GiveFeedback),
-    ('/ViewOnedayEvents',ViewOnedayEvents)
+    ('/ViewOnedayEvents',ViewOnedayEvents),
+      ('/ViewOnebuildingEvents',ViewOnebuildingEvents)
 ], debug=True)
 
 

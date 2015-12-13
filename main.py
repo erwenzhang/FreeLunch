@@ -125,13 +125,14 @@ class ViewOneEvent(webapp2.RequestHandler):
 class GiveFeedback(webapp2.RequestHandler):
     def get(self):
         feedback = self.request.get('feedback')
-        author_name = self.request.get('author_name')
-        author = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",author_name).get()
-        author.rated_times +=1
+        event_name = self.request.get('event_name')
+        author_name = ndb.gql("SELECT * FROM Event WHERE name = :1",event_name).get().author_name
+        author_object = ndb.gql("SELECT * FROM Crowdworker WHERE name = :1",author_name).get()
+        author_object.rated_times +=1
         if feedback == "Yes":
-            author.score +=5
+            author_object.score +=5
 
-        author.put()
+        author_object.put()
 
 class ViewAllWorkers(webapp2.RequestHandler):
     def get(self):

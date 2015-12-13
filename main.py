@@ -193,9 +193,13 @@ class MapView(webapp2.RequestHandler):
         locations = []
         buildings = []
         names = []
+        date = self.request.get("date")
+        date = datetime.datetime.strptime(date, '%Y %m %d')
+        print date
+
 
         for event in events:
-            if event.dt_start > datetime.datetime.now():
+            if str(event.dt_start)[0:10] == str(date)[0:10]:
                 locations.append(str(event.loc))
                 buildings.append(event.building)
                 names.append(event.name)

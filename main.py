@@ -254,12 +254,14 @@ class AddEventWeb(blobstore_handlers.BlobstoreUploadHandler):
         event_name = self.request.get("event_name")
         event_room = self.request.get("room")
         event_description = self.request.get("details")
+        thiscover_url = self.request.get("cover_url")
+        event_url = self.request.get("event_url")
 
         try:
             upload = self.get_uploads()[0]
             new_event = Event(parent=ndb.Key('author_name', worker_name), cover_url=str(upload.key()), name=event_name, loc=event_loc, building=event_build, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
         except Exception, e:
-            new_event = Event(parent=ndb.Key('author_name', worker_name), name=event_name, building=event_build, loc=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
+            new_event = Event(parent=ndb.Key('author_name', worker_name), cover_url=thiscover_url, linkage=event_url, name=event_name, building=event_build, loc=event_loc, author_name=worker_name, dt_start=event_dt_start, dt_end=event_dt_end, room=event_room, description=event_description)
 
         new_event.put()
 
@@ -355,7 +357,7 @@ class ViewOnebuildingEvents(webapp2.RequestHandler):
         dictPassed = {'events_name':events_name, 'events_dt_start':events_dt_start,'events_build':events_build}
         jsonObj = json.dumps(dictPassed, sort_keys=True,indent=4, separators=(',', ': '))
         self.response.write(jsonObj)
-        
+
 
 
 
